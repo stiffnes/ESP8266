@@ -1,0 +1,41 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+ 
+const char* ssid = "coding_netgear";
+const char* password = "025699383";
+const int port = 10000;
+ 
+WiFiServer server(port);
+WiFiClient client;
+ 
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+  server.begin();
+}
+ 
+void loop() {
+  if (!client.connected() ) {
+    client = server.available();
+    if (port == 80) {
+      String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+      client.print(s);
+    }
+  } else {
+    String req = client.readStringUntil('\r');
+    Serial.print(req);
+    while (Serial.available()) {
+      char c = Serial.read();
+      client.write(c);
+    }
+  }
+}
